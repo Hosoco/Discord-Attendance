@@ -6,9 +6,10 @@ Create a tokens.env file in the root directory and add the following:
 - BOT_TOKEN
 - APP_ID
 - AUTHORIZED
+
 Where authorized is a comma separated list of administrative users. Alternatively, you can add these to your environment variables.
 
-To run the bot, use the following command:
+Make sure there is a db folder in the root directory. To run the bot, use the following command:
 ```go run src/main.go```
 
 ### Creating a [Discord Bot](https://discordapp.com/developers/applications)
