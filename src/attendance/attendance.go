@@ -2,7 +2,6 @@ package attendance
 
 import (
 	"encoding/gob"
-	"fmt"
 	"os"
 	"time"
 )
@@ -23,7 +22,6 @@ func ClockIn(id string) {
 		return
 	}
 	Data[id] = User{Clockin: append(Data[id].Clockin, time.Now().Unix()), Clockout: Data[id].Clockout, ExtraHours: Data[id].ExtraHours}
-	fmt.Println(Data)
 }
 
 func ClockOut(id string) {
@@ -32,7 +30,6 @@ func ClockOut(id string) {
 		return
 	}
 	Data[id] = User{Clockout: append(Data[id].Clockout, time.Now().Unix()), Clockin: Data[id].Clockin, ExtraHours: Data[id].ExtraHours}
-	fmt.Println(Data)
 }
 
 func ChangeHours(id string, hours int64) {
@@ -41,7 +38,6 @@ func ChangeHours(id string, hours int64) {
 		return
 	}
 	Data[id] = User{ExtraHours: Data[id].ExtraHours + hours, Clockin: Data[id].Clockin, Clockout: Data[id].Clockout}
-	fmt.Println(Data)
 }
 
 func NewPeriod() {

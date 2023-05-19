@@ -28,6 +28,10 @@ func respond(s *discordgo.Session, i *discordgo.InteractionCreate, response stri
 	})
 }
 
+func getHours(s *discordgo.Session, i *discordgo.InteractionCreate) (int64, error) {
+	return strconv.ParseInt(i.ApplicationCommandData().Options[0].StringValue(), 10, 64)
+}
+
 func ClockIn(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if attendance.ClockedIn(i.Member.User.ID) {
 		respond(s, i, "You are already clocked in!")
@@ -46,48 +50,37 @@ func ClockOut(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
-func AddHours(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	//If interaction is a slash command
-	if i.Type == discordgo.InteractionApplicationCommand {
-		if !auth.IsAuthenticated(i.Member.User.ID) {
-			return
-		}
-		hours, err := strconv.ParseInt(i.ApplicationCommandData().Options[0].StringValue(), 10, 64)
-		if err != nil {
-			respond(s, i, "Invalid number of hours")
-			return
-		}
-		if len(i.ApplicationCommandData().Options) == 1 {
-			attendance.ChangeHours(i.Member.User.ID, hours)
-		} else if len(i.ApplicationCommandData().Options) == 2 {
-			attendance.ChangeHours(i.ApplicationCommandData().Options[1].UserValue(s).ID, hours)
-		} else {
-			respond(s, i, "Invalid number of arguments")
-			return
-		}
-		respond(s, i, "Successfully added hours to user!")
-	}
-}
+func ChangeHours(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-func RemoveHours(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Type != discordgo.InteractionApplicationCommand {
+		return
+	}
+
 	if !auth.IsAuthenticated(i.Member.User.ID) {
 		return
 	}
-	hours, err := strconv.ParseInt(i.ApplicationCommandData().Options[0].StringValue(), 10, 64)
+
+	hours, err := getHours(s, i)
 	if err != nil {
 		respond(s, i, "Invalid number of hours")
 		return
 	}
-	hours = -hours
-	if len(i.ApplicationCommandData().Options) == 1 {
-		attendance.ChangeHours(i.Member.User.ID, hours)
-	} else if len(i.ApplicationCommandData().Options) == 2 {
-		attendance.ChangeHours(i.ApplicationCommandData().Options[1].UserValue(s).ID, hours)
-	} else {
+	if i.ApplicationCommandData().Name == "removehours" {
+		hours = -hours
+	}
+	switch len(i.ApplicationCommandData().Options) {
+	case 1:
+		ownUser := i.Member.User.ID
+		attendance.ChangeHours(ownUser, hours)
+	case 2:
+		targetUser := i.ApplicationCommandData().Options[1].UserValue(s).ID
+		attendance.ChangeHours(targetUser, hours)
+	default:
 		respond(s, i, "Invalid number of arguments")
 		return
 	}
-	respond(s, i, "Successfully removed hours of user!")
+
+	respond(s, i, "Successfully changed hours of user!")
 }
 
 func Export(s *discordgo.Session, i *discordgo.InteractionCreate) {
